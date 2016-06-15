@@ -1,15 +1,15 @@
+var map 
     (function ($) {
     'use strict';
-
 
     $.fn.storymap = function(options) {
 
         var defaults = {
             selector: '[data-place]',
-            breakpointPos: '33.333%',
+            breakpointPos: '50%',
             createMap: function () {
                 // create a map in the "map" div, set the view to a given place and zoom
-                var map = L.map('map').setView([65, 18], 5);
+                map = L.map('map').setView([51.2861283,-115.095], 10)
 
                 // add an OpenStreetMap tile layer
                 L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
@@ -24,30 +24,26 @@
 
 
         if (typeof(L) === 'undefined') {
-            throw new Error('Storymap requires Laeaflet');
+            throw new Error('Storymap requires Leaflet');
         }
         if (typeof(_) === 'undefined') {
             throw new Error('Storymap requires underscore.js');
         }
 
         function getDistanceToTop(elem, top) {
+            // Get the window distance in order to knwo when to load layers
             var docViewTop = $(window).scrollTop();
-
             var elemTop = $(elem).offset().top;
-
             var dist = elemTop - docViewTop;
-
             var d1 = top - dist;
-
             if (d1 < 0) {
                 return $(window).height();
             }
             return d1;
-
         }
 
         function highlightTopPara(paragraphs, top) {
-
+            // Highlight the paragraph based on the distance to the top of the page
             var distances = _.map(paragraphs, function (element) {
                 var dist = getDistanceToTop(element, top);
                 return {el: $(element), distance: dist};
@@ -70,6 +66,7 @@
         }
 
         function watchHighlight(element, searchfor, top) {
+            //Watch for hilighting (Scrolling) to change
             var paragraphs = element.find(searchfor);
             highlightTopPara(paragraphs, top);
             $(window).scroll(function () {
@@ -78,7 +75,7 @@
         }
 
         var makeStoryMap = function (element, markers) {
-
+            // Build the actual story map
             var topElem = $('<div class="breakpoint-current"></div>')
                 .css('top', settings.breakpointPos);
             $('body').append(topElem);
@@ -108,16 +105,18 @@
 
             function showMapView(key) {
 
+                // clears all visible layers on the map
                 fg.clearLayers();
                 if (key === 'overview') {
                     map.setView(initPoint, initZoom, true);
                 } else if (markers[key]) {
+                    // iterate through the markers list
                     var marker = markers[key];
                     var layer = marker.layer;
                     if(typeof layer !== 'undefined'){
                       fg.addLayer(layer);
                     };
-                    fg.addLayer(L.marker([marker.lat, marker.lon]));
+                    fg.addLayer(L.marker([marker.lat, marker.lon]).bindPopup("Hello World"));
 
                     map.setView([marker.lat, marker.lon], marker.zoom, 1);
                 }
@@ -126,6 +125,7 @@
 
             paragraphs.on('viewing', function () {
                 showMapView($(this).data('place'));
+                console.log($(this).data('place'))
             });
         };
 
