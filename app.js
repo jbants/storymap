@@ -1,36 +1,120 @@
 // additional layers
 
-// load GeoJSON from an external file
-$.getJSON("River_Basin/Ghost_watershed.geojson",function(data){
-  // add GeoJSON layer to the map once the file is loaded
-  L.geoJson(data).addTo(map);
+
+var watershed = L.geoJson(null, {
+  style: function (feature) {
+    return {
+      color: "blue",
+      fill: true,
+      opacity: 1,
+      clickable: false
+    };
+  }
+});
+$.getJSON("River_Basin/Ghost_watershed.geojson", function (data) {
+  watershed.addData(data);
 });
 
-var layers = {
-  'test' : L.tileLayer.wms('http://limes.grid.unep.ch/geoserver/wms?', {
-      layers: 'limes:Balkash_173_20140830_LC8_NDVI',
-      tiled: true,
-      format: 'image/png',
-      transparent: true,
-      maxZoom: 14,
-      minZoom: 0,
-      continuousWorld: true
-      })
+var ghost_points = L.geoJson(null, {
+    pointToLayer: function(feature, coords) {
+        return new L.Marker(coords);
+    },
+    onEachFeature: function (feature, layer) {
+        layer.bindPopup(feature.properties.DESC);
+    }
+});
+$.getJSON("River_Basin/ghost_points.geojson", function (data) {
+  ghost_points.addData(data);
+});
 
+var socio_economic = L.geoJson(null, {
+    pointToLayer: function(feature, coords) {
+        return new L.Marker(coords);
+    },
+    onEachFeature: function (feature, layer) {
+        layer.bindPopup(feature.properties.DESC);
+    }
+});
+$.getJSON("River_Basin/socio_economic.geojson", function (data) {
+  socio_economic.addData(data);
+});
+
+var surface_water_quality = L.geoJson(null, {
+    pointToLayer: function(feature, coords) {
+        return new L.Marker(coords);
+    },
+    onEachFeature: function (feature, layer) {
+        layer.bindPopup(feature.properties.DESC);
+    }
+});
+$.getJSON("River_Basin/surface_water_quality.geojson", function (data) {
+  surface_water_quality.addData(data);
+});
+
+var surface_water_quantity = L.geoJson(null, {
+  style: function (feature) {
+    return {
+      color: "red",
+      fill: true,
+      opacity: 1,
+      clickable: true
+    };
+  },
+  onEachFeature: function (feature, layer) {
+      layer.bindPopup(feature.properties.DESC);
+  }  
+});
+$.getJSON("River_Basin/surface_water_quantity.geojson", function (data) {
+  surface_water_quantity.addData(data);
+});
+
+var biodiversity = L.geoJson(null, {
+  style: function (feature) {
+    return {
+      color: "green",
+      fill: false,
+      opacity: 1,
+      clickable: true
+    };
+  },
+  onEachFeature: function (feature, layer) {
+      layer.bindPopup(feature.properties.DESC);
+  }  
+});
+$.getJSON("River_Basin/biodiversity.geojson", function (data) {
+  biodiversity.addData(data);
+});
+
+var natural_earth = L.tileLayer('http://demo.opengeo.org/geoserver/gwc/service/tms/1.0.0/ne:ne@EPSG:900913@png/{z}/{x}/{y}.png', {
+    tms: true
+});
+
+var map_data = {
+    ghost: {initial:{lat: 51.2861283, lon: -115.095, zoom: 10}, layers:[watershed, ghost_points]},
+    socio_economic: {initial:{lat: 51.2861283, lon: -115.095, zoom: 12}, layers:[socio_economic]},
+    surface_water_quantity: {layers:[surface_water_quantity]},
+    surface_water_quality: {layers:[surface_water_quality]},
+    groundwater: {initial:{lat: 51.2861283, lon: -115.095, zoom: 10}, layers:[watershed]},
+    riperian: {initial:{lat: 51.2861283, lon: -115.095, zoom: 10}, layers:[natural_earth]},
+    biodiversity: {layers:[biodiversity]},
+    air_quality: {initial:{lat: 51.2861283, lon: -115.095, zoom: 10}, layers:[watershed]},
+    landuse: {initial:{lat: 51.2861283, lon: -115.095, zoom: 10}, layers:[watershed]},
+    existing_plans: {initial:{lat: 51.2861283, lon: -115.095, zoom: 10}, layers:[watershed]}
 };
 
-var markers = {
-    ghost: {lat: 51.2861283, lon: -114.983007, zoom: 12},
-    socio_economic: {lat: 51.1, lon: -115.095, zoom: 12},
-    surface_water_quantity: {lat: 51.35, lon: -114.97, zoom: 12},
-    surface_water_quality: {lat: 59.92173, lon: 10.75719, zoom: 7},
-    groundwater: {lat: 63.4319, lon: 10.3988, zoom: 7},
-    riperian: {lat: 60.3992, lon: 5.3227, zoom: 7},
-    biodiversity: {lat: 69.632, lon: 18.9197, zoom: 7},
-    air_quality: {lat: 58.17993, lon: 8.12952, zoom: 7},
-    landuse: {lat: 58.9694, lon: 5.73, zoom: 7},
-    existing_plans: {lat: 67.28319, lon: 14.38565, zoom: 7}
-};
-
-$('.main').storymap({markers: markers});
+// Initialize the map
+$('.main').storymap({
+  map_data: map_data,
+  createMap: function () { //function that creates a map
+    // create a map in the "map" div, set the view to a given place and zoom
+    var map = L.map('map').setView([51.2861283,-115.095], 10)            
+    // add an OpenStreetMap tile layer            
+    L.tileLayer(
+        'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
+        {attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'}
+    ).addTo(map);
+    watershed.addTo(map);
+    return map;
+  }
+ });
     

@@ -16,6 +16,7 @@ var map
                     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                 }).addTo(map);
 
+
                 return map;
             }
         };
@@ -74,7 +75,7 @@ var map
             });
         }
 
-        var makeStoryMap = function (element, markers) {
+        var makeStoryMap = function (element, map_data) {
             // Build the actual story map
             var topElem = $('<div class="breakpoint-current"></div>')
                 .css('top', settings.breakpointPos);
@@ -106,30 +107,40 @@ var map
             function showMapView(key) {
 
                 // clears all visible layers on the map
-                fg.clearLayers();
                 if (key === 'overview') {
+                    fg.clearLayers();
+                    settings.createMap;
+                    watershed.addTo(map);
                     map.setView(initPoint, initZoom, true);
-                } else if (markers[key]) {
-                    // iterate through the markers list
-                    var marker = markers[key];
-                    var layer = marker.layer;
-                    if(typeof layer !== 'undefined'){
-                      fg.addLayer(layer);
-                    };
-                    fg.addLayer(L.marker([marker.lat, marker.lon]).bindPopup("Hello World"));
+                } else if (map_data[key]) {
+                    // clears all visible layers on the map
+                    fg.clearLayers();
 
-                    map.setView([marker.lat, marker.lon], marker.zoom, 1);
+                    // iterate through the map_data list
+                    var data = map_data[key];
+                    var initial = map_data[key]['initial'];                    
+                    var layers = map_data[key]['layers'];
+                    if(typeof layers !== 'undefined'){
+                        for (var i=0; i < layers.length; i++){
+                            fg.addLayer(layers[i]);
+                        }
+                    };
+                    if(typeof initial !== 'undefined'){
+                        map.setView([initial.lat, initial.lon], initial.zoom, 1);
+                    }
+                    else{
+                        map.fitBounds(map_data[key]['layers'][0].getBounds())
+                    }
                 }
 
             }
 
             paragraphs.on('viewing', function () {
                 showMapView($(this).data('place'));
-                console.log($(this).data('place'))
             });
         };
 
-        makeStoryMap(this, settings.markers);
+        makeStoryMap(this, settings.map_data);
 
         return this;
     }
