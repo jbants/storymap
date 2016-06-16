@@ -23,7 +23,7 @@ var ghost_points = L.geoJson(null, {
         layer.bindPopup(feature.properties.DESC);
     }
 });
-$.getJSON("River_Basin/ghost_points.geojson", function (data) {
+$.getJSON("River_Basin/Ghost_points.geojson", function (data) {
   ghost_points.addData(data);
 });
 
@@ -42,9 +42,6 @@ $.getJSON("River_Basin/socio_economic.geojson", function (data) {
 var surface_water_quality = L.geoJson(null, {
     pointToLayer: function(feature, coords) {
         return new L.Marker(coords);
-    },
-    onEachFeature: function (feature, layer) {
-        layer.bindPopup(feature.properties.DESC);
     }
 });
 $.getJSON("River_Basin/surface_water_quality.geojson", function (data) {
